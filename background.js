@@ -1,7 +1,6 @@
 importScripts('services/adoApi.js');
 
 const ALARM_NAME = 'ado-pr-poll';
-const ICON_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 chrome.runtime.onInstalled.addListener(() => {
     chrome.alarms.create(ALARM_NAME, { periodInMinutes: 1 });
@@ -77,7 +76,7 @@ async function pollAdoPrs() {
 function showNotification(id, title, message) {
     chrome.notifications.create(id, {
         type: 'basic',
-        iconUrl: ICON_BASE64, // Placeholder icon
+        iconUrl: 'icon128.png',
         title: title,
         message: message,
         priority: 2,
