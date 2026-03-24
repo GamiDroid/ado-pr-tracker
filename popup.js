@@ -130,6 +130,29 @@ function renderList(listId, countId, prs, org, project) {
         let statusText = pr.status;
         if (pr.isDraft) statusText = 'Draft / Not ready';
 
+        const formatAdoDate = (d) => {
+            if (!d) return 'Unknown';
+            const date = new Date(d);
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const day = String(date.getDate()).padStart(2, '0');
+            const mo = months[date.getMonth()];
+            const yr = String(date.getFullYear()).slice(-2);
+            const hr = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${day}-${mo}-${yr} ${hr}:${min}`;
+        };
+
+        const sourceBranch = pr.sourceRefName ? pr.sourceRefName.replace('refs/heads/', '') : 'Unknown';
+        const targetBranch = pr.targetRefName ? pr.targetRefName.replace('refs/heads/', '') : 'Unknown';
+        const createdDate = formatAdoDate(pr.creationDate);
+        
+        let updatedDateStr = createdDate;
+        if (pr.lastMergeCommit && pr.lastMergeCommit.committer && pr.lastMergeCommit.committer.date) {
+            updatedDateStr = formatAdoDate(pr.lastMergeCommit.committer.date);
+        }
+
+        item.title = `Source: ${sourceBranch}\nTarget: ${targetBranch}\nCreated: ${createdDate}\nUpdated: ${updatedDateStr}`;
+
         item.innerHTML = `
             <div class="pr-title">#${pr.pullRequestId} &mdash; ${pr.title}</div>
             <div class="pr-meta">
