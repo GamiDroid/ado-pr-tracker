@@ -9,8 +9,19 @@
 
 <body>
     <div class="header">
-        <h1>My Pull Requests</h1>
-        <button id="settingsBtn" title="Settings">⚙️</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="icon16.png" width="20" height="20" alt="Logo">
+            <h1>My Pull Requests</h1>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <select id="sortSelect"
+                style="padding: 2px 4px; font-size: 11px; border-radius: 4px; background: white; color: #333; border: 1px solid #ccc; max-width: 140px;">
+                <option value="recent">Most recent</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+            </select>
+            <button id="settingsBtn" title="Settings">⚙️</button>
+        </div>
     </div>
 
     <div id="content">

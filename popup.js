@@ -1,6 +1,23 @@
+let globalAssigned = [];
+let globalReviewed = [];
+let globalOrg = '';
+let globalProject = '';
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('settingsBtn').addEventListener('click', () => {
         chrome.runtime.openOptionsPage();
+    });
+
+    const sortSelect = document.getElementById('sortSelect');
+    const { prSortOrder } = await chrome.storage.local.get(['prSortOrder']);
+    if (prSortOrder) {
+        sortSelect.value = prSortOrder;
+    }
+
+    sortSelect.addEventListener('change', async (e) => {
+        const order = e.target.value;
+        await chrome.storage.local.set({ prSortOrder: order });
+        renderSortedLists(order);
     });
 
     await renderPullRequests();
@@ -43,14 +60,53 @@ async function renderPullRequests() {
             }
         }
 
-        renderList('assignedList', 'assignedCount', assignedToMe, items.adoOrg, items.adoProject);
-        renderList('reviewedList', 'reviewedCount', reviewedByMe, items.adoOrg, items.adoProject);
+        globalAssigned = assignedToMe;
+        globalReviewed = reviewedByMe;
+        globalOrg = items.adoOrg;
+        globalProject = items.adoProject;
+
+        const { prSortOrder } = await chrome.storage.local.get(['prSortOrder']);
+        renderSortedLists(prSortOrder || 'recent');
 
     } catch (e) {
         document.getElementById('content').innerHTML = `
             <div style="padding: 16px; color: #a4262c; text-align: center;">Error fetching PRs. Check your PAT or internet connection: <br><br> ${e.message}</div>
         `;
     }
+}
+
+function sortPrs(prs, order) {
+    return prs.sort((a, b) => {
+        const getUpdatedDate = (pr) => {
+            // ADO might not always provide an updated date, so fallback to creationDate
+            // if lastMergeCommit.committer.date doesn't exist. We use creationDate as a base.
+            let date = pr.creationDate;
+            if (pr.lastMergeCommit && pr.lastMergeCommit.committer && pr.lastMergeCommit.committer.date) {
+                date = pr.lastMergeCommit.committer.date;
+            }
+            return new Date(date).getTime();
+        };
+
+        const dateA = new Date(a.creationDate).getTime();
+        const dateB = new Date(b.creationDate).getTime();
+        
+        switch (order) {
+            case 'oldest':
+                return dateA - dateB;
+            case 'newest':
+                return dateB - dateA;
+            case 'recent':
+            default:
+                return getUpdatedDate(b) - getUpdatedDate(a);
+        }
+    });
+}
+
+function renderSortedLists(order) {
+    const sortedAssigned = sortPrs([...globalAssigned], order);
+    const sortedReviewed = sortPrs([...globalReviewed], order);
+    renderList('assignedList', 'assignedCount', sortedAssigned, globalOrg, globalProject);
+    renderList('reviewedList', 'reviewedCount', sortedReviewed, globalOrg, globalProject);
 }
 
 function renderList(listId, countId, prs, org, project) {
