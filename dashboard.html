@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pull Requests Dashboard</title>
+    <link rel="icon" href="icon16.png" type="image/png">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="icon48.png" width="32" height="32" alt="Logo">
+            <h1>Detailed PR Dashboard</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">Loading advanced PR metrics... This may take a few seconds as we fetch comment threads.</div>
+        <table id="prTable" class="hidden">
+            <thead>
+                <tr>
+                    <th>PR #</th>
+                    <th>Title & Repository</th>
+                    <th>Author</th>
+                    <th>Activity</th>
+                    <th>Open Comments</th>
+                    <th>Created</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody id="prTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="services/adoApi.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

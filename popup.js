@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         chrome.runtime.openOptionsPage();
     });
 
+    const dashBtn = document.getElementById('openDashboardBtn');
+    if (dashBtn) {
+        dashBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+        });
+    }
+
     const sortSelect = document.getElementById('sortSelect');
     const { prSortOrder } = await chrome.storage.local.get(['prSortOrder']);
     if (prSortOrder) {

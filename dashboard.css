@@ -1,0 +1,130 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f2f1;
+    color: #323130;
+}
+
+.header {
+    background-color: #0078D4;
+    color: white;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-container h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.container {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #605e5c;
+}
+
+.hidden {
+    display: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #edebe9;
+}
+
+th {
+    background-color: #faf9f8;
+    color: #605e5c;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+tr:hover {
+    background-color: #fdfdfd;
+}
+
+.stale-badge {
+    background: #fce100;
+    color: #8a6a00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.very-stale-badge {
+    background: #fde7e9;
+    color: #a4262c;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.fresh-badge {
+    background: #dff6dd;
+    color: #107c10;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.pr-link {
+    color: #0078D4;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.pr-link:hover {
+    text-decoration: underline;
+}
+
+.repo-name {
+    font-size: 12px;
+    color: #605e5c;
+    margin-top: 4px;
+}
+
+.comment-count {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.comments-danger { background: #fde7e9; color: #a4262c; }
+.comments-good { background: #f3f2f1; color: #605e5c; }
