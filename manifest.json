@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Azure DevOps PR Tracker",
   "version": "1.0",
-  "description": "Voortgang en notificaties van Azure DevOps Pull Requests bijhouden.",
+  "description": "Track progress and receive notifications for Azure DevOps Pull Requests.",
   "permissions": [
     "storage",
     "alarms",

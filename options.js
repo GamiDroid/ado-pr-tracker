@@ -14,7 +14,7 @@ function saveOptions() {
         adoUserEmail: userEmail
     }, () => {
         const status = document.getElementById('statusMessage');
-        status.textContent = 'Instellingen succesvol opgeslagen.';
+        status.textContent = 'Settings saved successfully.';
         status.style.color = 'green';
         setTimeout(() => {
             status.textContent = '';

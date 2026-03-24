@@ -2,36 +2,36 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>PR Tracker - Instellingen</title>
+    <title>PR Tracker - Settings</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Tracker Instellingen</h1>
+        <h1>Tracker Settings</h1>
         
         <div class="form-group">
-            <label for="orgName">Azure DevOps Organisatie (bijv. 'mijn-org'):</label>
-            <input type="text" id="orgName" placeholder="Mijn Organisatie">
+            <label for="orgName">Azure DevOps Organization (e.g. 'my-org'):</label>
+            <input type="text" id="orgName" placeholder="My Organization">
         </div>
 
         <div class="form-group">
-            <label for="projectName">Project Naam:</label>
-            <input type="text" id="projectName" placeholder="Mijn Project">
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" placeholder="My Project">
         </div>
 
         <div class="form-group">
             <label for="patToken">Personal Access Token (PAT):</label>
-            <input type="password" id="patToken" placeholder="Plak hier je PAT">
-            <small>Maak een token in Azure DevOps met 'Pull Request Threads - Read & write' permissie.</small>
+            <input type="password" id="patToken" placeholder="Paste your PAT here">
+            <small>Create a token in Azure DevOps with 'Pull Request Threads - Read & write' permission.</small>
         </div>
 
         <div class="form-group">
-            <label for="userEmail">Jouw E-mailadres (in Azure DevOps):</label>
-            <input type="text" id="userEmail" placeholder="naam@bedrijf.nl">
-            <small>Dit wordt gebruikt om jouw specifieke PR's en reviews op te zoeken.</small>
+            <label for="userEmail">Your Email Address (in Azure DevOps):</label>
+            <input type="text" id="userEmail" placeholder="name@company.com">
+            <small>This is used to find your specific PRs and reviews.</small>
         </div>
 
-        <button id="saveBtn">Opslaan</button>
+        <button id="saveBtn">Save</button>
         <span id="statusMessage"></span>
     </div>
     <script src="options.js"></script>

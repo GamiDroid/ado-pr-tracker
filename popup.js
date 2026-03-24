@@ -11,8 +11,8 @@ async function renderPullRequests() {
     if (!items.adoOrg || !items.adoProject || !items.adoPat || !items.adoUserEmail) {
         document.getElementById('content').innerHTML = `
             <div style="padding: 16px; text-align: center;">
-                <p style="margin-bottom: 15px; color: #d13438;">De extensie is nog niet geconfigureerd.</p>
-                <button onclick="chrome.runtime.openOptionsPage()" style="background:#0078D4; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">Instellingen openen</button>
+                <p style="margin-bottom: 15px; color: #d13438;">The extension is not configured yet.</p>
+                <button onclick="chrome.runtime.openOptionsPage()" style="background:#0078D4; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">Open Settings</button>
             </div>
         `;
         return;
@@ -48,7 +48,7 @@ async function renderPullRequests() {
 
     } catch (e) {
         document.getElementById('content').innerHTML = `
-            <div style="padding: 16px; color: #a4262c; text-align: center;">Fout bij ophalen PR's. Controleer je PAT of internetverbinding: <br><br> ${e.message}</div>
+            <div style="padding: 16px; color: #a4262c; text-align: center;">Error fetching PRs. Check your PAT or internet connection: <br><br> ${e.message}</div>
         `;
     }
 }
@@ -58,7 +58,7 @@ function renderList(listId, countId, prs, org, project) {
     document.getElementById(countId).textContent = prs.length;
     
     if (prs.length === 0) {
-        listEl.innerHTML = '<div class="no-prs">Geen pull requests gevonden.</div>';
+        listEl.innerHTML = '<div class="no-prs">No pull requests found.</div>';
         return;
     }
 
@@ -72,7 +72,7 @@ function renderList(listId, countId, prs, org, project) {
         item.target = '_blank';
         
         let statusText = pr.status;
-        if (pr.isDraft) statusText = 'Draft / Niet gereed';
+        if (pr.isDraft) statusText = 'Draft / Not ready';
 
         item.innerHTML = `
             <div class="pr-title">#${pr.pullRequestId} &mdash; ${pr.title}</div>

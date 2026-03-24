@@ -17,7 +17,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 async function pollAdoPrs() {
     const items = await chrome.storage.local.get(['adoOrg', 'adoProject', 'adoPat', 'adoUserEmail', 'prState']);
     if (!items.adoOrg || !items.adoProject || !items.adoPat || !items.adoUserEmail) {
-        return; // Nog niet geconfigureerd
+        return; // Not configured yet
     }
 
     const api = new AdoApi(items.adoOrg, items.adoProject, items.adoPat, items.adoUserEmail);
@@ -30,7 +30,7 @@ async function pollAdoPrs() {
         
         for (const pr of activePrs) {
             const isReviewer = pr.reviewers && pr.reviewers.some(r => r.uniqueName.toLowerCase() === myEmail);
-            if (!isReviewer) continue; // Alleen PR's checken waar ik verantwoordelijk voor ben als reviewer
+            if (!isReviewer) continue; // Only check PRs where I am responsible as a reviewer
             
             const prId = String(pr.pullRequestId);
             const myVote = pr.reviewers.find(r => r.uniqueName.toLowerCase() === myEmail).vote;
@@ -48,29 +48,29 @@ async function pollAdoPrs() {
             const oldPr = oldState[prId];
 
             if (!oldPr) {
-                // Feature A: Nieuwe PR aan mij toegekend
-                showNotification(`pr_new_${prId}`, 'Nieuwe PR toegekend', `De PR "${pr.title}" is aan jou toegekend.`);
+                // Feature A: New PR assigned to me
+                showNotification(`pr_new_${prId}`, 'New PR Assigned', `The PR "${pr.title}" has been assigned to you.`);
             } else {
-                // Feature B: Update uitgevoerd op een PR waar ik een review op heb gemaakt.
-                // We checken of we in het verleden een vote hebben doorgegeven (vote !== 0).
+                // Feature B: Update performed on a PR I reviewed.
+                // We check if we cast a vote in the past (vote !== 0).
                 const iVotedBefore = oldPr.vote !== 0; 
                 if (iVotedBefore && lastCommitId !== oldPr.lastCommitId && oldPr.lastCommitId !== null) {
-                    showNotification(`pr_upd_${prId}`, 'PR Geüpdatet', `Nieuwe commits gepushed naar de PR "${pr.title}" die jij had gereviewd.`);
+                    showNotification(`pr_upd_${prId}`, 'PR Updated', `New commits pushed to the PR "${pr.title}" that you reviewed.`);
                 }
                 
-                // Feature C: Author heeft aangegeven dat de PR klaar is
-                // Optie 1: De auteur haalt de PR uit draft (`isDraft` false) nadat het in draft stond.
+                // Feature C: Author indicated the PR is ready
+                // Option 1: The author takes the PR out of draft (`isDraft` false) after it was in draft.
                 if (oldPr.isDraft && !isDraft) {
-                    showNotification(`pr_ready_${prId}`, 'PR is Klaar (Uit Draft)', `De PR "${pr.title}" is gereed voor review.`);
+                    showNotification(`pr_ready_${prId}`, 'PR is Ready (Out of Draft)', `The PR "${pr.title}" is ready for review.`);
                 }
             }
         }
         
-        // Sla de actuele status weer op, om bij de volgende run te vergelijken.
+        // Save the current status to compare on the next run.
         await chrome.storage.local.set({ prState: newState });
 
     } catch (error) {
-        console.error('Fout bij pollen van ADO PRs:', error);
+        console.error('Error polling ADO PRs:', error);
     }
 }
 
