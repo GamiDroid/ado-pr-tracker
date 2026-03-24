@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pull Requests</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>Mijn Pull Requests</h1>
+        <button id="settingsBtn" title="Instellingen">⚙️</button>
+    </div>
+
+    <div id="content">
+        <div class="section">
+            <h2>Aan mij toegekend <span class="badge" id="assignedCount">-</span></h2>
+            <ul id="assignedList" class="pr-list">Loading...</ul>
+        </div>
+
+        <div class="section">
+            <h2>Mijn actieve beoordelingen <span class="badge" id="reviewedCount">-</span></h2>
+            <ul id="reviewedList" class="pr-list">Loading...</ul>
+        </div>
+    </div>
+
+    <script src="services/adoApi.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>

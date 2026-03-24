@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Azure DevOps PR Tracker",
+  "version": "1.0",
+  "description": "Voortgang en notificaties van Azure DevOps Pull Requests bijhouden.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://dev.azure.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Azure DevOps PR Tracker"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
