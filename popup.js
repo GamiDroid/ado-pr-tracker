@@ -40,16 +40,17 @@ async function renderPullRequests() {
 
     try {
         const activePrs = await api.getActivePullRequests();
-        
+
         const assignedToMe = [];
         const reviewedByMe = [];
 
         for (const pr of activePrs) {
             const isReviewer = pr.reviewers && pr.reviewers.some(r => r.uniqueName.toLowerCase() === myEmail);
             const isAuthor = pr.createdBy && pr.createdBy.uniqueName.toLowerCase() === myEmail;
-            
+
             if (isReviewer) {
                 const myVote = pr.reviewers.find(r => r.uniqueName.toLowerCase() === myEmail).vote;
+                pr.myVote = myVote; // Opslaan zodat we het in de tile kunnen renderen
                 // vote === 0 betekent "niet afgerond" 
                 // in ADO: 10 = approved, 5 = approved with suggestions, -5 = waiting for author, -10 = rejected
                 if (myVote === 0 && !isAuthor) {
@@ -89,7 +90,7 @@ function sortPrs(prs, order) {
 
         const dateA = new Date(a.creationDate).getTime();
         const dateB = new Date(b.creationDate).getTime();
-        
+
         switch (order) {
             case 'oldest':
                 return dateA - dateB;
@@ -112,7 +113,7 @@ function renderSortedLists(order) {
 function renderList(listId, countId, prs, org, project) {
     const listEl = document.getElementById(listId);
     document.getElementById(countId).textContent = prs.length;
-    
+
     if (prs.length === 0) {
         listEl.innerHTML = '<div class="no-prs">No pull requests found.</div>';
         return;
@@ -121,19 +122,19 @@ function renderList(listId, countId, prs, org, project) {
     listEl.innerHTML = '';
     prs.forEach(pr => {
         const prUrl = `https://dev.azure.com/${org}/${project}/_git/${pr.repository.name}/pullrequest/${pr.pullRequestId}`;
-        
+
         const item = document.createElement('a');
         item.className = 'pr-item';
         item.href = prUrl;
         item.target = '_blank';
-        
+
         let statusText = pr.status;
         if (pr.isDraft) statusText = 'Draft / Not ready';
 
         const formatAdoDate = (d) => {
             if (!d) return 'Unknown';
             const date = new Date(d);
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const day = String(date.getDate()).padStart(2, '0');
             const mo = months[date.getMonth()];
             const yr = String(date.getFullYear()).slice(-2);
@@ -145,7 +146,7 @@ function renderList(listId, countId, prs, org, project) {
         const sourceBranch = pr.sourceRefName ? pr.sourceRefName.replace('refs/heads/', '') : 'Unknown';
         const targetBranch = pr.targetRefName ? pr.targetRefName.replace('refs/heads/', '') : 'Unknown';
         const createdDate = formatAdoDate(pr.creationDate);
-        
+
         let updatedDateStr = createdDate;
         if (pr.lastMergeCommit && pr.lastMergeCommit.committer && pr.lastMergeCommit.committer.date) {
             updatedDateStr = formatAdoDate(pr.lastMergeCommit.committer.date);
@@ -153,14 +154,29 @@ function renderList(listId, countId, prs, org, project) {
 
         item.title = `Source: ${sourceBranch}\nTarget: ${targetBranch}\nCreated: ${createdDate}\nUpdated: ${updatedDateStr}`;
 
+        let voteHtml = '';
+        if (pr.myVote !== undefined && pr.myVote !== 0) {
+            let voteLabel = '';
+            let voteColor = '';
+            switch (pr.myVote) {
+                case 10: voteLabel = 'Approved'; voteColor = '#107c10'; break;
+                case 5: voteLabel = 'Approved w/ suggestions'; voteColor = '#107c10'; break;
+                case -5: voteLabel = 'Waiting for author'; voteColor = '#f3541aff'; break;
+                case -10: voteLabel = 'Rejected'; voteColor = '#a4262c'; break;
+                default: voteLabel = 'Reviewed'; voteColor = '#0078d4'; break;
+            }
+            voteHtml = `<span style="color: ${voteColor}; font-weight: 500;">${pr.myVote > 0 ? '✓' : '✗'} ${voteLabel}</span>`;
+        }
+
         item.innerHTML = `
             <div class="pr-title">#${pr.pullRequestId} &mdash; ${pr.title}</div>
             <div class="pr-meta">
                 <span>By ${pr.createdBy.displayName}</span>
                 <span>[${pr.repository.name}]</span>
             </div>
-            <div class="pr-meta" style="margin-top: 5px; color: ${pr.isDraft ? '#d83b01' : '#107c10'}">
-                <span>Status: ${statusText}</span>
+            <div class="pr-meta" style="margin-top: 5px;">
+                <span style="color: ${pr.isDraft ? '#d83b01' : '#107c10'}">Status: ${statusText}</span>
+                ${voteHtml}
             </div>
         `;
         listEl.appendChild(item);
