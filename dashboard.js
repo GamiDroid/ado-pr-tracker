@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    const { prState } = await chrome.storage.local.get(['prState']);
+    if (prState) {
+        let changed = false;
+        for (const key in prState) {
+            if (!prState[key].seen) {
+                prState[key].seen = true;
+                changed = true;
+            }
+        }
+        if (changed) {
+            await chrome.storage.local.set({ prState });
+        }
+    }
+
     await renderDashboard();
 });
 
