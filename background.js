@@ -20,6 +20,27 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await pollAdoPrs();
 });
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'NOTIFY_REVIEWERS') {
+        const { repoId, prId } = request;
+        chrome.storage.local.get(['adoOrg', 'adoProject', 'adoPat', 'adoUserEmail'])
+            .then(items => {
+                if (!items.adoOrg || !items.adoPat) {
+                    sendResponse({ success: false, error: 'Not configured' });
+                    return;
+                }
+                const api = new AdoApi(items.adoOrg, items.adoProject, items.adoPat, items.adoUserEmail);
+                
+                const message = "🔔 Review Requested: The author has indicated that this PR is ready for review again.";
+                
+                api.addPullRequestThread(repoId, prId, message)
+                    .then(success => sendResponse({ success }))
+                    .catch(err => sendResponse({ success: false, error: err.message }));
+            });
+        return true; 
+    }
+});
+
 async function pollAdoPrs() {
     const items = await chrome.storage.local.get(['adoOrg', 'adoProject', 'adoPat', 'adoUserEmail', 'prState']);
     if (!items.adoOrg || !items.adoProject || !items.adoPat || !items.adoUserEmail) {
@@ -44,6 +65,29 @@ async function pollAdoPrs() {
             const isDraft = pr.isDraft || false;
             const lastCommitId = pr.lastMergeCommit ? pr.lastMergeCommit.commitId : null;
             
+            let lastThreadId = 0;
+            let reviewRequestedNewly = false;
+            try {
+                const threads = await api.getPullRequestThreads(pr.repository.id, pr.pullRequestId);
+                if (threads && threads.length > 0) {
+                    for (const thread of threads) {
+                        if (thread.id > lastThreadId) lastThreadId = thread.id;
+                        
+                        if (thread.comments && thread.comments.length > 0) {
+                            const latestComment = thread.comments[thread.comments.length - 1];
+                            if (latestComment.content && latestComment.content.includes("🔔 Review Requested")) {
+                                const oldPrThreadId = (oldState[prId] && oldState[prId].lastThreadId) || 0;
+                                if (!oldState[prId] || thread.id > oldPrThreadId) {
+                                    reviewRequestedNewly = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed fetching threads for PR', prId, err);
+            }
+
             const oldPr = oldState[prId];
             let isNewOrUpdated = false;
 
@@ -66,6 +110,11 @@ async function pollAdoPrs() {
                     isNewOrUpdated = true;
                     showNotification(`pr_ready_${prId}`, 'PR is Ready (Out of Draft)', `The PR "${pr.title}" is ready for review.`);
                 }
+                
+                if (reviewRequestedNewly) {
+                    isNewOrUpdated = true;
+                    showNotification(`pr_notify_${prId}_${lastThreadId}`, 'Pending Review', `The author has requested you to review the PR "${pr.title}".`);
+                }
             }
             
             newState[prId] = {
@@ -73,6 +122,7 @@ async function pollAdoPrs() {
                 status: pr.status,
                 isDraft: isDraft,
                 lastCommitId: lastCommitId,
+                lastThreadId: lastThreadId,
                 vote: myVote,
                 isAuthor: isAuthor,
                 seen: isNewOrUpdated ? false : (oldPr ? oldPr.seen : false)

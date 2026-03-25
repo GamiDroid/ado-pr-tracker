@@ -11,6 +11,15 @@
   "host_permissions": [
     "https://dev.azure.com/*"
   ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://dev.azure.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
   "background": {
     "service_worker": "background.js"
   },

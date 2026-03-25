@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function formatAdoDate(d) {
     if (!d) return 'Unknown';
     const date = new Date(d);
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const day = String(date.getDate()).padStart(2, '0');
     const mo = months[date.getMonth()];
     const yr = String(date.getFullYear()).slice(-2);
@@ -40,7 +40,7 @@ async function renderDashboard() {
 
     try {
         const activePrs = await api.getActivePullRequests();
-        
+
         // Filter to only PRs relevant to me (assigned to me, reviewed by me, or created by me)
         const relevantPrs = activePrs.filter(pr => {
             const isReviewer = pr.reviewers && pr.reviewers.some(r => r.uniqueName.toLowerCase() === myEmail);
@@ -49,14 +49,14 @@ async function renderDashboard() {
         });
 
         // We sort them by newest first by default in standard view
-        relevantPrs.sort((a,b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
+        relevantPrs.sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
 
         const tbody = document.getElementById('prTableBody');
-        
+
         for (const pr of relevantPrs) {
             // Fetch threads async
             const threads = await api.getPullRequestThreads(pr.repository.id, pr.pullRequestId);
-            
+
             // Calculate active threads (comments)
             let activeComments = 0;
             if (threads && threads.length > 0) {
@@ -92,7 +92,7 @@ async function renderDashboard() {
             }
 
             const tr = document.createElement('tr');
-            
+
             const prUrl = `https://dev.azure.com/${items.adoOrg}/${items.adoProject}/_git/${pr.repository.name}/pullrequest/${pr.pullRequestId}`;
 
             tr.innerHTML = `
