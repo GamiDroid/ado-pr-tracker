@@ -7,10 +7,18 @@
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-    <div class="header">
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
         <div class="logo-container">
             <img src="icon48.png" width="32" height="32" alt="Logo">
             <h1>Detailed PR Dashboard</h1>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <select id="sortSelect"
+                style="padding: 4px 8px; font-size: 13px; border-radius: 4px; background: white; color: #333; border: 1px solid #ccc; width: 150px;">
+                <option value="recent">Most recent</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+            </select>
         </div>
     </div>
 

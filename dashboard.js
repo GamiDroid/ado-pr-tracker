@@ -1,3 +1,7 @@
+let globalDashboardPrs = [];
+let globalAdoOrg = '';
+let globalAdoProject = '';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const { prState } = await chrome.storage.local.get(['prState']);
     if (prState) {
@@ -11,6 +15,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (changed) {
             await chrome.storage.local.set({ prState });
         }
+    }
+
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        const { prSortOrder } = await chrome.storage.local.get(['prSortOrder']);
+        if (prSortOrder) {
+            sortSelect.value = prSortOrder;
+        }
+        sortSelect.addEventListener('change', async (e) => {
+            const order = e.target.value;
+            await chrome.storage.local.set({ prSortOrder: order });
+            renderDashboardRows(order);
+        });
     }
 
     await renderDashboard();
@@ -35,6 +52,9 @@ async function renderDashboard() {
         return;
     }
 
+    globalAdoOrg = items.adoOrg;
+    globalAdoProject = items.adoProject;
+
     const api = new AdoApi(items.adoOrg, items.adoProject, items.adoPat, items.adoUserEmail);
     const myEmail = items.adoUserEmail.toLowerCase();
 
@@ -48,11 +68,6 @@ async function renderDashboard() {
             return isReviewer || isAuthor;
         });
 
-        // We sort them by newest first by default in standard view
-        relevantPrs.sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
-
-        const tbody = document.getElementById('prTableBody');
-
         for (const pr of relevantPrs) {
             // Fetch threads async
             const threads = await api.getPullRequestThreads(pr.repository.id, pr.pullRequestId);
@@ -60,61 +75,101 @@ async function renderDashboard() {
             // Calculate active threads (comments)
             let activeComments = 0;
             if (threads && threads.length > 0) {
-                // Determine true active status based on ADO logic (thread.status = active or pending)
                 activeComments = threads.filter(t => !t.isDeleted && (t.status === 'active' || t.status === 'pending')).length;
             }
+            pr.activeComments = activeComments;
 
             // Calculate dates
             let updatedDateObj = new Date(pr.creationDate);
             if (pr.lastMergeCommit && pr.lastMergeCommit.committer && pr.lastMergeCommit.committer.date) {
                 updatedDateObj = new Date(pr.lastMergeCommit.committer.date);
             }
-            const updatedTime = updatedDateObj.getTime();
-            const now = Date.now();
-            const diffDays = Math.floor((now - updatedTime) / (1000 * 60 * 60 * 24));
-
-            let activityBadge = '';
-            if (diffDays > 14) {
-                activityBadge = `<span class="very-stale-badge">Very Stale (${diffDays}d)</span>`;
-            } else if (diffDays > 5) {
-                activityBadge = `<span class="stale-badge">Stale (${diffDays}d)</span>`;
-            } else if (diffDays === 0) {
-                activityBadge = `<span class="fresh-badge">Active Today</span>`;
-            } else {
-                activityBadge = `<span class="fresh-badge">Active (${diffDays}d ago)</span>`;
-            }
-
-            let commentBadge = '';
-            if (activeComments > 0) {
-                commentBadge = `<span class="comment-count comments-danger">${activeComments} open</span>`;
-            } else {
-                commentBadge = `<span class="comment-count comments-good">All resolved</span>`;
-            }
-
-            const tr = document.createElement('tr');
-
-            const prUrl = `https://dev.azure.com/${items.adoOrg}/${items.adoProject}/_git/${pr.repository.name}/pullrequest/${pr.pullRequestId}`;
-
-            tr.innerHTML = `
-                <td><strong>#${pr.pullRequestId}</strong></td>
-                <td>
-                    <a href="${prUrl}" target="_blank" class="pr-link">${pr.title}</a>
-                    <div class="repo-name">${pr.repository.name}</div>
-                </td>
-                <td>${pr.createdBy.displayName}</td>
-                <td>${activityBadge}</td>
-                <td>${commentBadge}</td>
-                <td>${formatAdoDate(pr.creationDate)}</td>
-                <td>${formatAdoDate(updatedDateObj)}</td>
-            `;
-
-            tbody.appendChild(tr);
+            pr.updatedDateObj = updatedDateObj;
         }
+
+        globalDashboardPrs = relevantPrs;
+
+        const { prSortOrder } = await chrome.storage.local.get(['prSortOrder']);
+        renderDashboardRows(prSortOrder || 'recent');
 
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('prTable').classList.remove('hidden');
 
     } catch (e) {
         document.getElementById('loading').textContent = `Failed to load dashboard data: ${e.message}`;
+    }
+}
+
+function sortDashboardPrs(prs, order) {
+    return prs.sort((a, b) => {
+        const getUpdatedDate = (pr) => {
+            let date = pr.creationDate;
+            if (pr.lastMergeCommit && pr.lastMergeCommit.committer && pr.lastMergeCommit.committer.date) {
+                date = pr.lastMergeCommit.committer.date;
+            }
+            return new Date(date).getTime();
+        };
+
+        const dateA = new Date(a.creationDate).getTime();
+        const dateB = new Date(b.creationDate).getTime();
+
+        switch (order) {
+            case 'oldest':
+                return dateA - dateB;
+            case 'newest':
+                return dateB - dateA;
+            case 'recent':
+            default:
+                return getUpdatedDate(b) - getUpdatedDate(a);
+        }
+    });
+}
+
+function renderDashboardRows(order) {
+    const tbody = document.getElementById('prTableBody');
+    tbody.innerHTML = '';
+
+    const sortedPrs = sortDashboardPrs([...globalDashboardPrs], order);
+
+    for (const pr of sortedPrs) {
+        const updatedTime = pr.updatedDateObj.getTime();
+        const now = Date.now();
+        const diffDays = Math.floor((now - updatedTime) / (1000 * 60 * 60 * 24));
+
+        let activityBadge = '';
+        if (diffDays > 14) {
+            activityBadge = `<span class="very-stale-badge">Very Stale (${diffDays}d)</span>`;
+        } else if (diffDays > 5) {
+            activityBadge = `<span class="stale-badge">Stale (${diffDays}d)</span>`;
+        } else if (diffDays === 0) {
+            activityBadge = `<span class="fresh-badge">Active Today</span>`;
+        } else {
+            activityBadge = `<span class="fresh-badge">Active (${diffDays}d ago)</span>`;
+        }
+
+        let commentBadge = '';
+        if (pr.activeComments > 0) {
+            commentBadge = `<span class="comment-count comments-danger">${pr.activeComments} open</span>`;
+        } else {
+            commentBadge = `<span class="comment-count comments-good">All resolved</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        const prUrl = `https://dev.azure.com/${globalAdoOrg}/${globalAdoProject}/_git/${pr.repository.name}/pullrequest/${pr.pullRequestId}`;
+
+        tr.innerHTML = `
+            <td><strong>#${pr.pullRequestId}</strong></td>
+            <td>
+                <a href="${prUrl}" target="_blank" class="pr-link">${pr.title}</a>
+                <div class="repo-name">${pr.repository.name}</div>
+            </td>
+            <td>${pr.createdBy.displayName}</td>
+            <td>${activityBadge}</td>
+            <td>${commentBadge}</td>
+            <td>${formatAdoDate(pr.creationDate)}</td>
+            <td>${formatAdoDate(pr.updatedDateObj)}</td>
+        `;
+
+        tbody.appendChild(tr);
     }
 }
