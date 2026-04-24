@@ -78,3 +78,10 @@ button:hover {
     font-weight: 600;
     line-height: 2.2;
 }
+
+.app-version {
+    margin-top: 1rem;
+    color: #605e5c;
+    font-size: 0.85rem;
+    text-align: right;
+}

@@ -1,5 +1,10 @@
-document.addEventListener('DOMContentLoaded', restoreOptions);
+document.addEventListener('DOMContentLoaded', initializeOptionsPage);
 document.getElementById('saveBtn').addEventListener('click', saveOptions);
+
+function initializeOptionsPage() {
+    restoreOptions();
+    setAppVersion();
+}
 
 function saveOptions() {
     const orgName = document.getElementById('orgName').value.trim();
@@ -29,4 +34,8 @@ function restoreOptions() {
         if (items.adoPat) document.getElementById('patToken').value = items.adoPat;
         if (items.adoUserEmail) document.getElementById('userEmail').value = items.adoUserEmail;
     });
+}
+
+function setAppVersion() {
+    document.getElementById('appVersion').textContent = chrome.runtime.getManifest().version;
 }
